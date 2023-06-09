@@ -1,95 +1,109 @@
-import Image from 'next/image'
-import styles from './page.module.css'
+import { css } from "@linaria/core";
+import StockSearch from "@/components/StockSearch/StockSearch";
+import StockDetails from "@/components/StockDetails/StockDetails";
+import ErrorCard from "@/app/error";
+import ErrorBoundary from "@/components/ErrorBoundary/ErrorBoundary";
+import Spinner from "@/components/Spinner/Spinner";
+import ChartContainer from "@/components/ChartContainer/ChartContainer";
+import { Suspense } from "react";
+import { headers } from "next/headers";
 
-export default function Home() {
+const App = () => {
+  const headersList = headers();
+  const fullUrl = headersList.get("referer") || "http://localhost:3000/";
+  const urlParams = new URLSearchParams(new URL(fullUrl).search);
+  const companyName = urlParams.get("company") || "";
+  const displaySymbol = urlParams.get("symbol") || "";
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <div className={containerCSS}>
+        <div className="searchContainer">
+          <StockSearch />
+          {displaySymbol && (
+            <ErrorBoundary fallback={<ErrorCard />}>
+              <Suspense fallback={<Spinner className={stockSpinnerCSS} />}>
+                {/* @ts-expect-error Server Component */}
+                <StockDetails
+                  displaySymbol={displaySymbol}
+                  companyName={companyName}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </div>
+        <div className="border" />
+        <div className="chartContainer">
+          {displaySymbol && (
+            <>
+              <ErrorBoundary fallback={<ErrorCard />}>
+                <Suspense fallback={<Spinner className={chartSpinnerCSS} />}>
+                  <ChartContainer
+                    displaySymbol={displaySymbol}
+                    companyName={companyName}
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            </>
+          )}
         </div>
       </div>
+    </>
+  );
+};
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+const stockSpinnerCSS = css`
+  margin: 50px auto;
+  width: 122px;
+`;
 
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
+const chartSpinnerCSS = css`
+  text-align: center;
+  margin-top: 150px;
+`;
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
+const containerCSS = css`
+  width: 100%;
+  height: calc(100vh - 119px);
+  display: flex;
+  flex-direction: column;
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
+  @media (min-width: 1350px) {
+    flex-direction: row;
+  }
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
-}
+  h3 {
+    font-size: 2rem;
+  }
+
+  .searchContainer {
+    width: 100%;
+    padding: 20px 40px;
+
+    @media (min-width: 1350px) {
+      width: 50%;
+    }
+  }
+
+  .border {
+    display: none;
+
+    @media (min-width: 1350px) {
+      display: block;
+      width: 2px;
+      background-color: gray;
+      height: 100vh- 119px;
+      margin-bottom: -34px;
+    }
+  }
+
+  .chartContainer {
+    padding: 65px 0 0 40px;
+    width: 100%;
+
+    @media (min-width: 1350px) {
+      width: 50%;
+    }
+  }
+`;
+
+export default App;
