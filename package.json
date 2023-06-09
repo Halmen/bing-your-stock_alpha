@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "eslint \"**/*.{ts,tsx}\" --fix"
   },
   "dependencies": {
     "@linaria/babel-preset": "^4.4.5",
